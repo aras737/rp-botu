@@ -1,0 +1,12 @@
+{
+  "name": "san-diego-rp-bot",
+  "version": "1.0.0",
+  "description": "San Diego Border RP Discord Bot",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.14.1"
+  }
+}
