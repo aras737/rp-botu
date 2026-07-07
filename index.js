@@ -32,13 +32,11 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
 // 3. Çoklu Gelişmiş Slash Komutları Tanımlamaları
 const commands = [
-    // Sunucu Kurulum Komutu
     new SlashCommandBuilder()
         .setName('sunucu-kur')
         .setDescription('San Diego Border RP tüm sistemlerini, kanallarını ve rollerini sıfırdan kurar.')
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
-    // Sınır Durumu Değiştirme Komutu
     new SlashCommandBuilder()
         .setName('sınır-durumu')
         .setDescription('Sınır kapısının giriş durumunu günceller ve duyurur.')
@@ -53,7 +51,6 @@ const commands = [
                 ))
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels),
 
-    // Sicil Kaydı Ekleme Komutu
     new SlashCommandBuilder()
         .setName('sicil-ekle')
         .setDescription('Sınır ihlali yapan veya suç işleyen bir sivilin siciline işler.')
@@ -68,7 +65,7 @@ client.once('ready', async () => {
     
     const rest = new REST({ version: '10' }).setToken(TOKEN);
     try {
-        console.log('[SİSTEM] Slash komutları Discord API API\'ye kaydediliyor...');
+        console.log('[SİSTEM] Slash komutları Discord API\'ye kaydediliyor...');
         await rest.put(Routes.applicationCommands(CLIENT_ID), { body: commands });
         console.log('[SİSTEM] Tüm slash komutları başarıyla aktif edildi.');
     } catch (error) {
@@ -87,8 +84,7 @@ client.on('interactionCreate', async interaction => {
         await interaction.reply({ content: '⏳ **San Diego Sınır RP** altyapısı kuruluyor... Lütfen bekleyin.', ephemeral: true });
 
         try {
-            // Detaylı Rol Kurulumları ve Hiyerarşik Dağılımı
-            const roller Listesi = [
+            const rollerListesi = [
                 { name: '👑 Sunucu Kurucusu', color: '#ff0000', hoist: true },
                 { name: '🛡️ Yönetim Kadrosu', color: '#e74c3c', hoist: true },
                 { name: '🎖️ RP Denetçisi / Admin', color: '#f1c40f', hoist: true },
@@ -100,47 +96,39 @@ client.on('interactionCreate', async interaction => {
                 { name: '🛂 Turist / Ziyaretçi', color: '#bdc3c7', hoist: false }
             ];
 
-            const olusturulanRoller = {};
             for (const r of rollerListesi) {
-                const yeniRol = await guild.roles.create({
+                await guild.roles.create({
                     name: r.name,
                     color: r.color,
                     hoist: r.hoist,
                     reason: 'San Diego Otomatik Altyapı Kurulumu'
                 });
-                olusturulanRoller[r.name] = yeniRol;
             }
 
-            // 1. Kategori: Bilgilendirme Alanı
             const katBilgi = await guild.channels.create({ name: '📢 BİLGİLENDİRME', type: ChannelType.GuildCategory });
             await guild.channels.create({ name: '📜-rp-kuralları', type: ChannelType.GuildText, parent: katBilgi.id });
             await guild.channels.create({ name: '📢-duyurular', type: ChannelType.GuildText, parent: katBilgi.id });
             await guild.channels.create({ name: '🎁-etkinlikler', type: ChannelType.GuildText, parent: katBilgi.id });
 
-            // 2. Kategori: Sivil Alanı (Herkese Açık)
             const katSivil = await guild.channels.create({ name: '💬 SAN DIEGO RESORT', type: ChannelType.GuildCategory });
             await guild.channels.create({ name: '💬-genel-sohbet', type: ChannelType.GuildText, parent: katSivil.id });
             await guild.channels.create({ name: '📷-oyun-içi-medya', type: ChannelType.GuildText, parent: katSivil.id });
             await guild.channels.create({ name: '🤖-bot-komut', type: ChannelType.GuildText, parent: katSivil.id });
 
-            // 3. Kategori: Başvuru ve Evrak Sistemleri
             const katBasvuru = await guild.channels.create({ name: '📝 BAŞVURU MERKEZİ', type: ChannelType.GuildCategory });
             await guild.channels.create({ name: '👮-memur-başvuruları', type: ChannelType.GuildText, parent: katBasvuru.id });
             await guild.channels.create({ name: '📁-başvuru-sonuçları', type: ChannelType.GuildText, parent: katBasvuru.id });
 
-            // 4. Kategori: Sınır Bölgesi ve Rol Kanalları (In-Character)
             const katIC = await guild.channels.create({ name: '🚔 SAN DIEGO BORDER (IC)', type: ChannelType.GuildCategory });
             const chSinir = await guild.channels.create({ name: '📰-sınır-durumu', type: ChannelType.GuildText, parent: katIC.id });
             await guild.channels.create({ name: '📄-sicil-kayıtları', type: ChannelType.GuildText, parent: katIC.id });
             await guild.channels.create({ name: '📻-telsiz-koordinasyon', type: ChannelType.GuildText, parent: katIC.id });
 
-            // 5. Kategori: Ses Kanalları ve Telsizler
             const katSes = await guild.channels.create({ name: '🔊 SES ODALARI', type: ChannelType.GuildCategory });
             await guild.channels.create({ name: '🔊 Genel Sohbet', type: ChannelType.GuildVoice, parent: katSes.id });
             await guild.channels.create({ name: '🚓 Devriye Telsizi #1', type: ChannelType.GuildVoice, parent: katSes.id });
             await guild.channels.create({ name: '🦅 SWAT Operasyon', type: ChannelType.GuildVoice, parent: katSes.id });
 
-            // Başlangıç Duyurusu ve Embed Tasarımı
             const hosgeldinEmbed = new EmbedBuilder()
                 .setTitle('🇺🇸 San Diego Sınır Rol Yapma Sunucusuna Hoş Geldiniz!')
                 .setDescription('Botumuz tarafından tüm kanallar, kategoriler ve yetki hiyerarşileri hatasız bir şekilde kurulmuştur. Sınır kapısı şu an aktif durumdadır!')
@@ -149,11 +137,11 @@ client.on('interactionCreate', async interaction => {
                 .setFooter({ text: 'San Diego Gelişmiş Sınır Yönetim Sistemi' });
 
             await chSinir.send({ embeds: [hosgeldinEmbed] });
-            await interaction.followUp({ content: '✅ **Başarılı!** Tüm kategoriler, 12 adet kanal ve 9 adet özel rol başarıyla inşa edildi.', ephemeral: true });
+            await interaction.followUp({ content: '✅ **Başarılı!** Tüm kategoriler, kanallar ve özel roller başarıyla inşa edildi.', ephemeral: true });
 
         } catch (error) {
             console.error(error);
-            await interaction.followUp({ content: '❌ Kurulum esnasında bir yetki hatası meydana geldi.', ephemeral: true });
+            await interaction.followUp({ content: '❌ Kurulum esnasında bir hata meydana geldi.', ephemeral: true });
         }
     }
 
